@@ -1,24 +1,29 @@
 package com.example.mthat.simpletodo;
 
-import android.content.Intent;
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
 
-import org.apache.commons.io.FileUtils;
+        import android.content.Intent;
+        import android.os.Bundle;
+        import android.support.v7.app.AppCompatActivity;
+        import android.view.View;
+        import android.widget.AdapterView;
+        import android.widget.ArrayAdapter;
+        import android.widget.EditText;
+        import android.widget.ListView;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+        import org.apache.commons.io.FileUtils;
+
+        import java.io.File;
+        import java.io.IOException;
+        import java.util.ArrayList;
+
+import static android.R.attr.data;
 
 public class MainActivity extends AppCompatActivity {
     ArrayList<String> items;
     ArrayAdapter<String> itemsAdapter;
     ListView lvItems;
+    private final int REQUEST_CODE = 20;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,8 +32,8 @@ public class MainActivity extends AppCompatActivity {
         readItems();
         itemsAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,items);
         lvItems.setAdapter(itemsAdapter);
-        items.add("First todo Item");
-        items.add("Second todo Item");
+        //items.add("First todo Item");
+        //items.add("Second todo Item");
         setupListViewListner();
     }
     public void onAddItem(View v){
@@ -50,17 +55,26 @@ public class MainActivity extends AppCompatActivity {
                         return true;
                     }
                 });
-
         lvItems.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-                    @Override
-                    public void onItemClick(AdapterView<?> adapter, View item, int pos, long id){
-                        Intent i = new Intent(MainActivity.this, EditItemActivity.class);
-                        i.putExtra("editItem", lvItems.getItemAtPosition(pos).toString());
-                        startActivity(i);
-                    }
-                });
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent i = new Intent(MainActivity.this, EditItemActivity.class);
+                i.putExtra("saveItem", lvItems.getItemAtPosition(position).toString());
+                i.putExtra("index", position);
+                startActivityForResult(i,REQUEST_CODE);
+            }
+        });
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE){
+            String newvalue = data.getExtras().getString("editedValue");
+            int position = data.getExtras().getInt("index", 0);
+            items.set(position,newvalue);
+            itemsAdapter.notifyDataSetChanged();
+            writeItems();
 
-
+        }
     }
 
 
