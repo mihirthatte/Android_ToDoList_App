@@ -26,12 +26,10 @@ public class EditItemActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_item);
         EditText editNewItem = (EditText) findViewById(R.id.editItem);
-        String itemText = editNewItem.getText().toString();
         String item = getIntent().getStringExtra("saveItem");
         editNewItem.setText(item);
         editNewItem.setSelection(item.length());
         index = getIntent().getIntExtra("index", 0);
-        editNewItem.setSelection(itemText.length());
         Button button = (Button) findViewById(R.id.savebtn);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
