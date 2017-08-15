@@ -1,25 +1,20 @@
 package com.example.mthat.simpletodo;
 
+import android.content.Intent;
+import android.database.Cursor;
+import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.Toast;
 
-        import android.content.Intent;
-        import android.os.Bundle;
-        import android.support.v7.app.AppCompatActivity;
-        import android.view.View;
-        import android.widget.AdapterView;
-        import android.widget.ArrayAdapter;
-        import android.widget.EditText;
-        import android.widget.ListView;
-
-        import org.apache.commons.io.FileUtils;
-
-        import java.io.File;
-        import java.io.IOException;
-        import java.util.ArrayList;
-
-import static android.R.attr.data;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    DatabaseHelper myDb; //SQLite database
     ArrayList<String> items;
     ArrayAdapter<String> itemsAdapter;
     ListView lvItems;
@@ -28,12 +23,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        myDb = new DatabaseHelper(this); //SQL database connection2
         lvItems = (ListView)findViewById(R.id.lvItems);
         readItems();
         itemsAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,items);
         lvItems.setAdapter(itemsAdapter);
-        //items.add("First todo Item");
-        //items.add("Second todo Item");
         setupListViewListner();
     }
     public void onAddItem(View v){
@@ -79,24 +73,23 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void readItems(){
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, "todo.txt");
-        try{
-            items = new ArrayList<String>(FileUtils.readLines(todoFile));
+        Cursor cursor = myDb.getToDoList();
+        items = new ArrayList<String>();
+        if(cursor.getCount() > 0){
+            while(cursor.moveToNext()){
+                items.add(cursor.getString(1));
+            }
         }
-        catch(IOException e){
-            items = new ArrayList<String>();
-        }
+
+
     }
     private void writeItems(){
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, "todo.txt");
-        try{
-            FileUtils.writeLines(todoFile, items);
-        }
-        catch(IOException e){
-            e.printStackTrace();
-        }
+        myDb.clearTable();
+       for(String i : items){
+           if(! myDb.insertData(i)){
+               Toast.makeText(MainActivity.this, "Data not inserted",Toast.LENGTH_LONG).show();
+           }
+       }
     }
 
 
